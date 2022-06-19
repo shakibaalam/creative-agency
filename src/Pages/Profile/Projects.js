@@ -10,21 +10,21 @@ const Projects = () => {
     const [user] = useAuthState(auth);
     const { register, formState: { errors }, handleSubmit } = useForm();
 
-    const { data: projects, isLoading, refetch } = useQuery(['projects', user?.email], () => fetch(`http://localhost:5000/projects?email=${user?.email}`, {
+    const { data: projects, isLoading, refetch } = useQuery(['projects', user?.email], () => fetch(`https://gentle-savannah-01985.herokuapp.com/projects?email=${user?.email}`, {
         method: 'GET',
         headers: {
             authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
     }).then(res => res.json())
     );
-    // console.log(projects);
+    console.log(projects);
     if (isLoading) {
         return <Loading></Loading>
     }
 
     const onSubmit = data => {
         console.log(data);
-        fetch(`http://localhost:5000/projects`, {
+        fetch(`https://gentle-savannah-01985.herokuapp.com/projects`, {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
