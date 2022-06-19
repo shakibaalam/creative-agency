@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify';
 import { useQuery } from 'react-query';
 import auth from '../../firebase.init';
@@ -8,6 +9,7 @@ import Loading from '../Shared/Loading';
 
 const Projects = () => {
     const [user] = useAuthState(auth);
+    const navigate = useNavigate();
     const { register, formState: { errors }, handleSubmit } = useForm();
 
     const { data: projects, isLoading, refetch } = useQuery(['projects', user?.email], () => fetch(`https://gentle-savannah-01985.herokuapp.com/projects?email=${user?.email}`, {
@@ -24,20 +26,28 @@ const Projects = () => {
 
     const onSubmit = data => {
         console.log(data);
-        fetch(`https://gentle-savannah-01985.herokuapp.com/projects`, {
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json',
-                authorization: `Bearer ${localStorage.getItem('accessToken')}`
-            },
-            body: JSON.stringify(data)
-        })
-            .then(res => res.json())
-            .then(inserted => {
-                console.log(inserted);
-                toast.success('successfully inserted')
-                refetch()
-            });
+        if (!user) {
+            navigate('/login');
+        }
+        else {
+            fetch(`https://gentle-savannah-01985.herokuapp.com/projects`, {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(inserted => {
+                    console.log(inserted);
+                    if (inserted) {
+                        toast.success('successfully inserted')
+                        refetch()
+                    }
+                });
+        }
+
 
     }
 
@@ -86,21 +96,29 @@ const Projects = () => {
             </div>
             <div className=' lg:mx-32 my-20'>
                 {
-                    projects && <div className=''>
-                        <div className=' grid lg:grid-cols-3 grid-cols-1 gap-4'>
-                            {
-                                projects?.map((project, index) => <div key={index} class="card lg:w-96 bg-base-100 shadow-xl">
-                                    <div class="card-body">
-                                        <h2 class="card-title">{project.projectName}</h2>
-                                        <p>{project.desc}</p>
-                                        <p>{project.category}</p>
-                                        <p>{project.start}</p>
-                                        <p>{project.end}</p>
-                                    </div>
-                                </div>)
-                            }
-                        </div>
+                    user ? <div>
+                        {
+                            projects && <div className=''>
+                                <div className=' grid lg:grid-cols-3 grid-cols-1 gap-4'>
+                                    {
+                                        projects?.map((project, index) => <div key={index} class="card lg:w-96 bg-base-100 shadow-xl">
+                                            <div class="card-body">
+                                                <h2 class="card-title">{project.projectName}</h2>
+                                                <p>{project.desc}</p>
+                                                <p>{project.category}</p>
+                                                <p>{project.start}</p>
+                                                <p>{project.end}</p>
+                                            </div>
+                                        </div>)
+                                    }
+                                </div>
+                            </div>
+                        }
                     </div>
+                        :
+                        <div>
+                        </div>
+
                 }
             </div>
         </div>
